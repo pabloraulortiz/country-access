@@ -27,32 +27,30 @@ jobs:
           M=android/app/src/main/AndroidManifest.xml
           sed -i 's#<application#<uses-permission android:name="android.permission.INTERNET"/>\n    <uses-permission android:name="android.permission.CAMERA"/>\n    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>\n    <application#' "$M"
 
-      - name: Activar desugaring
+      - name: Desactivar R8 (ML Kit)
         run: |
-          ls android/app
           python3 - <<'PYEOF'
           import os
           kts = os.path.exists('android/app/build.gradle.kts')
           f = 'android/app/build.gradle.kts' if kts else 'android/app/build.gradle'
           s = open(f).read()
-          flag = 'isCoreLibraryDesugaringEnabled = true' if kts else 'coreLibraryDesugaringEnabled true'
-          dep = ('coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")' if kts
-                 else "coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.1.4'")
-          if 'compileOptions {' in s:
-              s = s.replace('compileOptions {', 'compileOptions {\n        ' + flag, 1)
-          elif 'android {' in s:
-              s = s.replace('android {', 'android {\n    compileOptions {\n        ' + flag + '\n    }', 1)
-          s += '\ndependencies {\n    ' + dep + '\n}\n'
+          if kts:
+              old = 'signingConfig = signingConfigs.getByName("debug")'
+              new = old + '\n            isMinifyEnabled = false\n            isShrinkResources = false'
+          else:
+              old = 'signingConfig signingConfigs.debug'
+              new = old + '\n            minifyEnabled false\n            shrinkResources false'
+          assert old in s, 'NO SE ENCONTRO signingConfig EN ' + f
+          s = s.replace(old, new, 1)
           open(f, 'w').write(s)
           print(s)
-          assert flag in s, 'NO SE PUDO ACTIVAR DESUGARING'
           PYEOF
 
       - run: flutter pub get
 
       - name: Compilar APK
         run: |
-          flutter build apk --release --no-shrink \
+          flutter build apk --release \
             --dart-define=SUPABASE_URL=${{ vars.SUPABASE_URL }} \
             --dart-define=SUPABASE_ANON_KEY=${{ vars.SUPABASE_ANON_KEY }}
 
