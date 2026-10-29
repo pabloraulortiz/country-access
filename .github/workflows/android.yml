@@ -25,7 +25,16 @@ jobs:
       - name: Permisos (internet, cámara)
         run: |
           M=android/app/src/main/AndroidManifest.xml
-          sed -i 's#<application#<uses-permission android:name="android.permission.INTERNET"/>\n    <uses-permission android:name="android.permission.CAMERA"/>\n    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>\n    <application#' "$M"
+          sed -i 's#<application#<uses-permission android:name="android.permission.INTERNET"/>\n    <uses-permission android:name="android.permission.CAMERA"/>\n    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>\n    <uses-permission android:name="android.permission.USE_BIOMETRIC"/>\n    <application#' "$M"
+
+      - name: Configurar huella (FragmentActivity y tema)
+        run: |
+          F=$(find android/app/src/main -name MainActivity.kt)
+          echo "$F"
+          sed -i 's/FlutterActivity/FlutterFragmentActivity/g' "$F"
+          cat "$F"
+          grep -rl 'NoTitleBar' android/app/src/main/res | xargs sed -i -E 's#@android:style/Theme\.[A-Za-z.]*NoTitleBar#@style/Theme.AppCompat.DayNight.NoActionBar#'
+          grep -rn 'AppCompat' android/app/src/main/res
 
       - name: Desactivar R8 (ML Kit)
         run: |
