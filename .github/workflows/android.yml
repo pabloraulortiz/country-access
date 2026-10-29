@@ -1,0 +1,41 @@
+name: Compilar APK Android
+
+on:
+  workflow_dispatch:
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Generar plataforma Android
+        run: flutter create . --platforms=android --project-name country_access --org ar.com.country
+
+      - name: Permisos (internet, cámara)
+        run: |
+          M=android/app/src/main/AndroidManifest.xml
+          sed -i 's#<application#<uses-permission android:name="android.permission.INTERNET"/>\n    <uses-permission android:name="android.permission.CAMERA"/>\n    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>\n    <application#' "$M"
+
+      - run: flutter pub get
+
+      - name: Compilar APK
+        run: |
+          flutter build apk --release \
+            --dart-define=SUPABASE_URL=${{ vars.SUPABASE_URL }} \
+            --dart-define=SUPABASE_ANON_KEY=${{ vars.SUPABASE_ANON_KEY }}
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: country-access-apk
+          path: build/app/outputs/flutter-apk/app-release.apk
