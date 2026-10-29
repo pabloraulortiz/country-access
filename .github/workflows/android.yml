@@ -27,24 +27,25 @@ jobs:
           M=android/app/src/main/AndroidManifest.xml
           sed -i 's#<application#<uses-permission android:name="android.permission.INTERNET"/>\n    <uses-permission android:name="android.permission.CAMERA"/>\n    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>\n    <application#' "$M"
 
-      - name: Activar desugaring (flutter_local_notifications)
+      - name: Activar desugaring
         run: |
+          ls android/app
           python3 - <<'PYEOF'
-          import os, re
-          kts = 'android/app/build.gradle.kts'
-          grv = 'android/app/build.gradle'
-          if os.path.exists(kts):
-              f = kts
-              s = open(f).read()
-              s = s.replace('compileOptions {', 'compileOptions {\n        isCoreLibraryDesugaringEnabled = true', 1)
-              s += '\ndependencies {\n    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")\n}\n'
-          else:
-              f = grv
-              s = open(f).read()
-              s = s.replace('compileOptions {', 'compileOptions {\n        coreLibraryDesugaringEnabled true', 1)
-              s += "\ndependencies {\n    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.1.4'\n}\n"
+          import os
+          kts = os.path.exists('android/app/build.gradle.kts')
+          f = 'android/app/build.gradle.kts' if kts else 'android/app/build.gradle'
+          s = open(f).read()
+          flag = 'isCoreLibraryDesugaringEnabled = true' if kts else 'coreLibraryDesugaringEnabled true'
+          dep = ('coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")' if kts
+                 else "coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.1.4'")
+          if 'compileOptions {' in s:
+              s = s.replace('compileOptions {', 'compileOptions {\n        ' + flag, 1)
+          elif 'android {' in s:
+              s = s.replace('android {', 'android {\n    compileOptions {\n        ' + flag + '\n    }', 1)
+          s += '\ndependencies {\n    ' + dep + '\n}\n'
           open(f, 'w').write(s)
           print(s)
+          assert flag in s, 'NO SE PUDO ACTIVAR DESUGARING'
           PYEOF
 
       - run: flutter pub get
