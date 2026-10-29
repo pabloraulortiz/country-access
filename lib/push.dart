@@ -1,7 +1,5 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:flutter/foundation.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 @pragma('vm:entry-point')
@@ -14,46 +12,16 @@ Future<void> _bgHandler(RemoteMessage m) async {
 class Push {
   static bool _ready = false;
   static bool _listening = false;
-  static final _local = FlutterLocalNotificationsPlugin();
-  static const _channel = AndroidNotificationChannel(
-    'access_alerts',
-    'Alertas de acceso',
-    description: 'Visitas, autorizaciones y alertas de pánico',
-    importance: Importance.max,
-  );
-
   static Future<void> init() async {
     try {
       await Firebase.initializeApp();
       FirebaseMessaging.onBackgroundMessage(_bgHandler);
-      await _local.initialize(const InitializationSettings(
-        android: AndroidInitializationSettings('@mipmap/ic_launcher'),
-        iOS: DarwinInitializationSettings(),
-      ));
-      await _local
-          .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
-          ?.createNotificationChannel(_channel);
       await FirebaseMessaging.instance
           .setForegroundNotificationPresentationOptions(alert: true, badge: true, sound: true);
-      FirebaseMessaging.onMessage.listen(_onForeground);
       _ready = true;
     } catch (_) {
       _ready = false;
     }
-  }
-
-  static void _onForeground(RemoteMessage m) {
-    final n = m.notification;
-    if (n == null || defaultTargetPlatform != TargetPlatform.android) return; // iOS ya la muestra el sistema
-    _local.show(
-      m.hashCode,
-      n.title,
-      n.body,
-      NotificationDetails(
-        android: AndroidNotificationDetails(_channel.id, _channel.name,
-            channelDescription: _channel.description, importance: Importance.max, priority: Priority.high),
-      ),
-    );
   }
 
   /// Llamar después de iniciar sesión.
