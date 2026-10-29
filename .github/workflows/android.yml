@@ -52,7 +52,7 @@ jobs:
 
       - name: Compilar APK
         run: |
-          flutter build apk --release \
+          flutter build apk --release --no-shrink \
             --dart-define=SUPABASE_URL=${{ vars.SUPABASE_URL }} \
             --dart-define=SUPABASE_ANON_KEY=${{ vars.SUPABASE_ANON_KEY }}
 
