@@ -27,6 +27,26 @@ jobs:
           M=android/app/src/main/AndroidManifest.xml
           sed -i 's#<application#<uses-permission android:name="android.permission.INTERNET"/>\n    <uses-permission android:name="android.permission.CAMERA"/>\n    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>\n    <application#' "$M"
 
+      - name: Activar desugaring (flutter_local_notifications)
+        run: |
+          python3 - <<'PYEOF'
+          import os, re
+          kts = 'android/app/build.gradle.kts'
+          grv = 'android/app/build.gradle'
+          if os.path.exists(kts):
+              f = kts
+              s = open(f).read()
+              s = s.replace('compileOptions {', 'compileOptions {\n        isCoreLibraryDesugaringEnabled = true', 1)
+              s += '\ndependencies {\n    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")\n}\n'
+          else:
+              f = grv
+              s = open(f).read()
+              s = s.replace('compileOptions {', 'compileOptions {\n        coreLibraryDesugaringEnabled true', 1)
+              s += "\ndependencies {\n    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.1.4'\n}\n"
+          open(f, 'w').write(s)
+          print(s)
+          PYEOF
+
       - run: flutter pub get
 
       - name: Compilar APK
