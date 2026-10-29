@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../auth_util.dart';
+
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
   @override
@@ -20,7 +22,7 @@ class _LoginScreenState extends State<LoginScreen> {
     });
     try {
       await Supabase.instance.client.auth
-          .signInWithPassword(email: _email.text.trim(), password: _pass.text);
+          .signInWithPassword(email: toAuthEmail(_email.text), password: toAuthPassword(_email.text, _pass.text));
     } on AuthException catch (e) {
       setState(() => _error = e.message);
     } finally {
@@ -44,8 +46,9 @@ class _LoginScreenState extends State<LoginScreen> {
                 const SizedBox(height: 24),
                 TextField(
                   controller: _email,
-                  keyboardType: TextInputType.emailAddress,
-                  decoration: const InputDecoration(labelText: 'Email', border: OutlineInputBorder()),
+                  autocorrect: false,
+                  textCapitalization: TextCapitalization.none,
+                  decoration: const InputDecoration(labelText: 'Usuario', border: OutlineInputBorder()),
                 ),
                 const SizedBox(height: 12),
                 TextField(

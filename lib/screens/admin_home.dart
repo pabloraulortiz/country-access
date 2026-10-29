@@ -6,6 +6,7 @@ import 'dart:typed_data';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 
+import '../auth_util.dart';
 import '../models.dart';
 import '../photo.dart';
 import '../push.dart';
@@ -298,7 +299,7 @@ class _UsersTabState extends State<_UsersTab> {
                     .map((u) => ListTile(
                           leading: ProfileAvatar(path: u['photo_path'], name: u['full_name'], radius: 20),
                           title: Text(u['full_name'], style: TextStyle(decoration: u['active'] == false ? TextDecoration.lineThrough : null)),
-                          subtitle: Text('${_roleLabel[u['role']]}${u['email'] != null ? ' · ${u['email']}' : ''}'),
+                          subtitle: Text('${_roleLabel[u['role']]}${u['email'] != null ? ' · ${displayUser(u['email'])}' : ''}'),
                           onTap: () => _open(u),
                         ))
                     .toList(),
@@ -337,8 +338,8 @@ class _UserFormScreenState extends State<_UserFormScreen> {
     try {
       final res = await _callUsers({
         'action': 'create',
-        'email': _email.text.trim(),
-        'password': _pass.text,
+        'email': toAuthEmail(_email.text),
+        'password': toAuthPassword(_email.text, _pass.text),
         'full_name': _name.text.trim(),
         'role': _role,
         'dni': _dni.text.trim(),
@@ -409,15 +410,20 @@ class _UserFormScreenState extends State<_UserFormScreen> {
           const SizedBox(height: 12),
           TextFormField(
             controller: _email,
-            keyboardType: TextInputType.emailAddress,
-            decoration: const InputDecoration(labelText: 'Email (usuario de ingreso)', border: OutlineInputBorder()),
-            validator: (v) => (v == null || !v.contains('@')) ? 'Email inválido' : null,
+            autocorrect: false,
+            decoration: const InputDecoration(labelText: 'Usuario de ingreso', border: OutlineInputBorder()),
+            validator: (v) {
+              final t = (v ?? '').trim();
+              if (t.isEmpty) return 'Ingresá un usuario';
+              if (t.contains(' ')) return 'Sin espacios';
+              return null;
+            },
           ),
           const SizedBox(height: 12),
           TextFormField(
             controller: _pass,
             decoration: const InputDecoration(labelText: 'Contraseña inicial (mín. 8)', border: OutlineInputBorder()),
-            validator: (v) => (v == null || v.length < 8) ? 'Mínimo 8 caracteres' : null,
+            validator: (v) => (v == null || v.length < 2) ? 'Mínimo 2 caracteres' : null,
           ),
           const SizedBox(height: 12),
           TextFormField(controller: _dni, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'DNI', border: OutlineInputBorder())),
@@ -551,7 +557,7 @@ class _UserSheetState extends State<_UserSheet> {
       context: context,
       builder: (_) => AlertDialog(
         title: const Text('Nueva contraseña'),
-        content: TextField(controller: c, decoration: const InputDecoration(labelText: 'Mínimo 8 caracteres')),
+        content: TextField(controller: c, decoration: const InputDecoration(labelText: 'Mínimo 2 caracteres')),
         actions: [
           TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancelar')),
           FilledButton(onPressed: () => Navigator.pop(context, true), child: const Text('Cambiar')),
@@ -559,8 +565,16 @@ class _UserSheetState extends State<_UserSheet> {
       ),
     );
     if (ok != true) return;
+    if (c.text.length < 2) {
+      if (mounted) _snack(context, 'Mínimo 2 caracteres');
+      return;
+    }
     try {
-      await _callUsers({'action': 'set_password', 'user_id': widget.user['id'], 'password': c.text});
+      await _callUsers({
+        'action': 'set_password',
+        'user_id': widget.user['id'],
+        'password': toAuthPassword(widget.user['email'] ?? '', c.text),
+      });
       if (mounted) _snack(context, 'Contraseña actualizada');
     } catch (e) {
       if (mounted) _snack(context, e.toString().replaceFirst('Exception: ', ''));
@@ -593,7 +607,7 @@ class _UserSheetState extends State<_UserSheet> {
           const SizedBox(width: 12),
           Expanded(child: Text(u['full_name'], style: Theme.of(context).textTheme.titleLarge)),
         ]),
-        if (u['email'] != null) Text(u['email']),
+        if (u['email'] != null) Text(displayUser(u['email'])),
         if (u['dni'] != null && (u['dni'] as String).isNotEmpty) Text('DNI: ${u['dni']}'),
         if (u['phone'] != null && (u['phone'] as String).isNotEmpty) Text('Tel: ${u['phone']}'),
         const SizedBox(height: 8),
