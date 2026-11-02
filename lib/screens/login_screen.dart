@@ -93,8 +93,11 @@ class _LoginScreenState extends State<LoginScreen> {
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 400),
               child: Column(mainAxisSize: MainAxisSize.min, children: [
-                const Icon(Icons.shield_outlined, size: 64),
-                const SizedBox(height: 12),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(16),
+                  child: Image.asset('assets/oasis.jpg', height: 190, width: double.infinity, fit: BoxFit.cover),
+                ),
+                const SizedBox(height: 16),
                 Text('Country Access', style: Theme.of(context).textTheme.headlineSmall),
                 const SizedBox(height: 24),
                 TextField(
@@ -144,6 +147,10 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
                 ],
+                const SizedBox(height: 32),
+                Text('Desarrollado por', style: Theme.of(context).textTheme.bodySmall),
+                const SizedBox(height: 6),
+                Image.asset('assets/siscord.png', height: 44),
               ]),
             ),
           ),
