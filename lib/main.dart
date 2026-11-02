@@ -4,6 +4,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'config.dart';
 import 'models.dart';
 import 'push.dart';
+import 'theme.dart';
 import 'screens/login_screen.dart';
 import 'screens/owner_home.dart';
 import 'screens/guard_home.dart';
@@ -26,7 +27,7 @@ class CountryApp extends StatelessWidget {
     return MaterialApp(
       title: 'Country Access',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(colorSchemeSeed: const Color(0xFF1B5E20), useMaterial3: true),
+      theme: buildTheme(),
       home: const AuthGate(),
     );
   }
