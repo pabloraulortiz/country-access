@@ -10,6 +10,7 @@ import '../models.dart';
 import '../ocr.dart';
 import '../photo.dart';
 import '../push.dart';
+import '../theme.dart';
 
 final _db = Supabase.instance.client;
 
@@ -58,7 +59,7 @@ class _GuardHomeState extends State<GuardHome> {
     ];
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Garita'),
+        title: const BrandTitle(height: 20),
         actions: [
           SegmentedButton<String>(
             showSelectedIcon: false,

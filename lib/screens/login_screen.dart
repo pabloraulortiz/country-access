@@ -98,7 +98,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   child: Image.asset('assets/oasis.jpg', height: 190, width: double.infinity, fit: BoxFit.cover),
                 ),
                 const SizedBox(height: 16),
-                Text('Country Access', style: Theme.of(context).textTheme.headlineSmall),
+                Text('SisVecino', style: Theme.of(context).textTheme.headlineSmall),
                 const SizedBox(height: 24),
                 TextField(
                   controller: _user,

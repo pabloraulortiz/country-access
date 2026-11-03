@@ -6,6 +6,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../models.dart';
 import '../push.dart';
+import '../theme.dart';
 import 'new_visit_screen.dart';
 
 final _db = Supabase.instance.client;
@@ -45,7 +46,7 @@ class _OwnerHomeState extends State<OwnerHome> {
     ];
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.profile.fullName),
+        title: BrandTitle(text: widget.profile.fullName),
         actions: [
           IconButton(icon: const Icon(Icons.logout), onPressed: () => Push.signOut()),
         ],

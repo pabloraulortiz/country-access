@@ -10,6 +10,7 @@ import '../auth_util.dart';
 import '../models.dart';
 import '../photo.dart';
 import '../push.dart';
+import '../theme.dart';
 
 final _db = Supabase.instance.client;
 
@@ -47,7 +48,7 @@ class _AdminHomeState extends State<AdminHome> {
     ];
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Administración'),
+        title: const BrandTitle(text: 'Administración'),
         actions: [
           IconButton(
             tooltip: 'Lista de bloqueo',

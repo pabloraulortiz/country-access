@@ -25,7 +25,7 @@ class CountryApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Country Access',
+      title: 'SisVecino',
       debugShowCheckedModeBanner: false,
       theme: buildTheme(),
       home: const AuthGate(),

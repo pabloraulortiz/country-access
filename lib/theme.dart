@@ -74,3 +74,21 @@ ThemeData buildTheme() {
     ),
   );
 }
+
+/// Título de las barras superiores: logo de Siscord (versión blanca) y, opcional, un texto.
+class BrandTitle extends StatelessWidget {
+  final String? text;
+  final double height;
+  const BrandTitle({super.key, this.text, this.height = 22});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(mainAxisSize: MainAxisSize.min, children: [
+      Image.asset('assets/siscord_white.png', height: height),
+      if (text != null) ...[
+        const SizedBox(width: 10),
+        Flexible(child: Text(text!, overflow: TextOverflow.ellipsis)),
+      ],
+    ]);
+  }
+}
